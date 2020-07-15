@@ -35,18 +35,12 @@ class _QRViewState extends State<QRView> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        _getPlatformQrView(),
-        widget.overlay != null
-            ? Container(
-                decoration: ShapeDecoration(
-                  shape: widget.overlay,
-                ),
-              )
-            : Container(),
-      ],
-    );
+    return Stack(children: [
+      _getPlatformQrView(),
+      widget.overlay != null
+          ? Container(decoration: ShapeDecoration(shape: widget.overlay))
+          : Container()
+    ]);
   }
 
   Widget _getPlatformQrView() {
@@ -54,17 +48,15 @@ class _QRViewState extends State<QRView> {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         _platformQrView = AndroidView(
-          viewType: '$LIBRARY_ID/qrview',
-          onPlatformViewCreated: _onPlatformViewCreated,
-        );
+            viewType: '$LIBRARY_ID/qrview',
+            onPlatformViewCreated: _onPlatformViewCreated);
         break;
       case TargetPlatform.iOS:
         _platformQrView = UiKitView(
-          viewType: '$LIBRARY_ID/qrview',
-          onPlatformViewCreated: _onPlatformViewCreated,
-          creationParams: _CreationParams.fromWidget(0, 0).toMap(),
-          creationParamsCodec: StandardMessageCodec(),
-        );
+            viewType: '$LIBRARY_ID/qrview',
+            onPlatformViewCreated: _onPlatformViewCreated,
+            creationParams: _CreationParams.fromWidget(0, 0).toMap(),
+            creationParamsCodec: StandardMessageCodec());
         break;
       default:
         throw UnsupportedError(
@@ -104,10 +96,7 @@ class _CreationParams {
   final double height;
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'width': width,
-      'height': height,
-    };
+    return <String, dynamic>{'width': width, 'height': height};
   }
 }
 
