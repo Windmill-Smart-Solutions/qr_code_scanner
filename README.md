@@ -55,6 +55,17 @@ class _QRViewExampleState extends State<QRViewExample> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   var qrText = "";
   QRViewController controller;
+  StreamController<bool> permissionController = StreamController<bool>();
+
+  @override
+  void initState() {
+    super.initState();
+    permissionController.stream.listen((isPermissionGrantedEvent) {
+        setState(() {
+          final isPermissionGranted = isPermissionGrantedEvent;
+        });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +77,7 @@ class _QRViewExampleState extends State<QRViewExample> {
             child: QRView(
               key: qrKey,
               onQRViewCreated: _onQRViewCreated,
+              permissionStreamSink: permissionController.sink,
             ),
           ),
           Expanded(
@@ -125,6 +137,22 @@ Resume camera stream and scanner.
 controller.resume();
 ```
 
+## Open application permission settings (only for Android)
+Pause camera stream and scanner.
+```dart
+controller.openPermissionSettings();
+```
+
+## Extra camera permission check
+Subscribe on permissionStream to get know if permission is still granted
+```dart
+permissionController.stream.listen((isPermissionGrantedEvent) {
+      setState(() {
+        final isPermissionGranted = isPermissionGrantedEvent;
+        //todo react on camera permission changes
+      });
+    });
+```
 
 
 # TODO'S:
