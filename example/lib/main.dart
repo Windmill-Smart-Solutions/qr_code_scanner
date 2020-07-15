@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:qr_code_scanner/qr_scanner_overlay_shape.dart';
@@ -22,8 +24,20 @@ class _QRViewExampleState extends State<QRViewExample> {
   var qrText = "";
   var flashState = flash_on;
   var cameraState = front_camera;
+  var isPermissionGranted = true;
   QRViewController controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+  StreamController<bool> permissionController = StreamController<bool>();
+
+  @override
+  void initState() {
+    super.initState();
+    permissionController.stream.listen((isPermissionGrantedEvent) {
+      setState(() {
+        isPermissionGranted = isPermissionGrantedEvent;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,17 +45,7 @@ class _QRViewExampleState extends State<QRViewExample> {
       body: Column(
         children: <Widget>[
           Expanded(
-            child: QRView(
-              key: qrKey,
-              onQRViewCreated: _onQRViewCreated,
-              overlay: QrScannerOverlayShape(
-                borderColor: Colors.red,
-                borderRadius: 10,
-                borderLength: 30,
-                borderWidth: 10,
-                cutOutSize: 300,
-              ),
-            ),
+            child: isPermissionGranted ? qrViewWidget : permissionDialogWidget,
             flex: 4,
           ),
           Expanded(
@@ -153,6 +157,41 @@ class _QRViewExampleState extends State<QRViewExample> {
   @override
   void dispose() {
     controller.dispose();
+    permissionController.close();
     super.dispose();
   }
+
+  Widget get qrViewWidget => QRView(
+        key: qrKey,
+        onQRViewCreated: _onQRViewCreated,
+        permissionStreamSink: permissionController.sink,
+        overlay: QrScannerOverlayShape(
+          borderColor: Colors.red,
+          borderRadius: 10,
+          borderLength: 30,
+          borderWidth: 10,
+          cutOutSize: 300,
+        ),
+      );
+
+  Widget get permissionDialogWidget => Center(
+          child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              "Camera Permission is nod granted",
+              style: TextStyle(color: Colors.black, fontSize: 24.0),
+            ),
+            FlatButton(
+              color: Colors.blue,
+              onPressed: () {
+                controller.openPermissionSettings();
+              },
+              child: Text("Open Settings"),
+            )
+          ],
+        ),
+      ));
 }

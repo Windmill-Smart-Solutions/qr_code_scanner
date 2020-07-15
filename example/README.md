@@ -40,6 +40,18 @@ class _QRViewExampleState extends State<QRViewExample> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   var qrText = "";
   QRViewController controller;
+  StreamController<bool> permissionController = StreamController<bool>();
+
+  @override
+  void initState() {
+    super.initState();
+    permissionController.stream.listen((isPermissionGrantedEvent) {
+      setState(() {
+        isPermissionGranted = isPermissionGrantedEvent;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,6 +61,7 @@ class _QRViewExampleState extends State<QRViewExample> {
             child: QRView(
               key: qrKey,
               onQRViewCreated: _onQRViewCreated,
+              permissionStreamSink: permissionController.sink,
             ),
             flex: 4,
           ),
@@ -89,6 +102,13 @@ class _QRViewExampleState extends State<QRViewExample> {
           });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    permissionController.close();
+    super.dispose();
   }
 }
 ```
