@@ -43,26 +43,36 @@ class _QRViewState extends State<QRView> {
     ]);
   }
 
+  Widget _platformQrView;
+
   Widget _getPlatformQrView() {
-    Widget _platformQrView;
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        _platformQrView = AndroidView(
-            viewType: '$LIBRARY_ID/qrview',
-            onPlatformViewCreated: _onPlatformViewCreated);
+        if (_platformQrView == null) {
+          _platformQrView = AndroidView(
+              viewType: '$LIBRARY_ID/qrview',
+              onPlatformViewCreated: _onPlatformViewCreated);
+          return _platformQrView;
+        } else {
+          return _platformQrView;
+        }
         break;
       case TargetPlatform.iOS:
-        _platformQrView = UiKitView(
-            viewType: '$LIBRARY_ID/qrview',
-            onPlatformViewCreated: _onPlatformViewCreated,
-            creationParams: _CreationParams.fromWidget(0, 0).toMap(),
-            creationParamsCodec: StandardMessageCodec());
+        if (_platformQrView == null) {
+          _platformQrView = UiKitView(
+              viewType: '$LIBRARY_ID/qrview',
+              onPlatformViewCreated: _onPlatformViewCreated,
+              creationParams: _CreationParams.fromWidget(0, 0).toMap(),
+              creationParamsCodec: StandardMessageCodec());
+          return _platformQrView;
+        } else {
+          return _platformQrView;
+        }
         break;
       default:
         throw UnsupportedError(
             "Trying to use the default webview implementation for $defaultTargetPlatform but there isn't a default one");
     }
-    return _platformQrView;
   }
 
   void _onPlatformViewCreated(int id) {
