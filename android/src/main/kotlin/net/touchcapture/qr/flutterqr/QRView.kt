@@ -29,7 +29,7 @@ class QRView(private val registrar: PluginRegistry.Registrar, id: Int) :
 
     companion object {
         const val CAMERA_REQUEST_ID = 513469796
-        const val LIBRARY_ID ="net.touchcapture.qr.flutterqr"
+        const val LIBRARY_ID = "net.touchcapture.qr.flutterqr"
         private const val cameraPermission = "cameraPermission"
         private const val openPermissionSettings = "openPermissionSettings"
         private const val permissionGranted = "granted"
@@ -83,6 +83,7 @@ class QRView(private val registrar: PluginRegistry.Registrar, id: Int) :
             }
         })
     }
+
     private fun postPermissionEnabled() {
         if (!isPermissionEnabled) {
             isPermissionEnabled = true
@@ -165,12 +166,14 @@ class QRView(private val registrar: PluginRegistry.Registrar, id: Int) :
     private inner class CameraRequestPermissionsListener : PluginRegistry.RequestPermissionsResultListener {
         override fun onRequestPermissionsResult(id: Int, permissions: Array<String>, grantResults: IntArray): Boolean {
             if (id == CAMERA_REQUEST_ID) {
-                if (grantResults[0] == PERMISSION_GRANTED) {
-                    isPermissionEnabled = true
-                    cameraPermissionContinuation?.run()
-                } else {
-                    isPermissionEnabled = false
-                    permissionChannel.invokeMethod(cameraPermission, permissionDenied)
+                if (grantResults.isNotEmpty()) {
+                    if (grantResults[0] == PERMISSION_GRANTED) {
+                        isPermissionEnabled = true
+                        cameraPermissionContinuation?.run()
+                    } else {
+                        isPermissionEnabled = false
+                        permissionChannel.invokeMethod(cameraPermission, permissionDenied)
+                    }
                 }
                 return true
             }
