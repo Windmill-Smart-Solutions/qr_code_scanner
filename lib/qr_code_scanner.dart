@@ -3,10 +3,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+export 'package:qr_code_scanner/src/qr_scanner_overlay_shape.dart';
 
-typedef void QRViewCreatedCallback(QRViewController controller);
+typedef QRViewCreatedCallback = void Function(QRViewController controller);
 
-const LIBRARY_ID = 'net.touchcapture.qr.flutterqr';
+const libraryId = 'net.touchcapture.qr.flutterqr';
 
 class QRView extends StatefulWidget {
   const QRView({
@@ -37,9 +38,7 @@ class _QRViewState extends State<QRView> {
   Widget build(BuildContext context) {
     return Stack(children: [
       _getPlatformQrView(),
-      widget.overlay != null
-          ? Container(decoration: ShapeDecoration(shape: widget.overlay))
-          : Container()
+      _getOverlay(),
     ]);
   }
 
@@ -49,22 +48,21 @@ class _QRViewState extends State<QRView> {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         if (_platformQrView == null) {
-          _platformQrView = AndroidView(
-              viewType: '$LIBRARY_ID/qrview',
+          return _platformQrView = AndroidView(
+              viewType: '$libraryId/qrview',
               onPlatformViewCreated: _onPlatformViewCreated);
-          return _platformQrView;
         } else {
           return _platformQrView;
         }
         break;
       case TargetPlatform.iOS:
         if (_platformQrView == null) {
-          _platformQrView = UiKitView(
-              viewType: '$LIBRARY_ID/qrview',
+          return _platformQrView = UiKitView(
+              viewType: '$libraryId/qrview',
               onPlatformViewCreated: _onPlatformViewCreated,
               creationParams: _CreationParams.fromWidget(0, 0).toMap(),
               creationParamsCodec: StandardMessageCodec());
-          return _platformQrView;
+//          return _platformQrView;
         } else {
           return _platformQrView;
         }
@@ -80,15 +78,21 @@ class _QRViewState extends State<QRView> {
       return;
     }
     widget.onQRViewCreated(QRViewController._(id, widget.key));
-    permissionChannel = MethodChannel('$LIBRARY_ID/permission');
-    permissionChannel.setMethodCallHandler((MethodCall call) async {
-      if (call.method == cameraPermission) {
-        if (call.arguments != null) {
-          final isPermissionGranted = call.arguments == permissionGranted;
-          widget.permissionStreamSink.add(isPermissionGranted);
+    permissionChannel = MethodChannel('$libraryId/permission')
+      ..setMethodCallHandler((call) async {
+        if (call.method == cameraPermission) {
+          if (call.arguments != null) {
+            final isPermissionGranted = call.arguments == permissionGranted;
+            widget.permissionStreamSink.add(isPermissionGranted);
+          }
         }
-      }
-    });
+      });
+  }
+
+  Widget _getOverlay() {
+    return widget.overlay != null
+        ? Container(decoration: ShapeDecoration(shape: widget.overlay))
+        : Container();
   }
 }
 
@@ -111,23 +115,15 @@ class _CreationParams {
 }
 
 class QRViewController {
-  static const scanMethodCall = "onRecognizeQR";
-
-  final MethodChannel _channel;
-
-  StreamController<String> _scanUpdateController = StreamController<String>();
-
-  Stream<String> get scannedDataStream => _scanUpdateController.stream;
-
   QRViewController._(int id, GlobalKey qrKey)
-      : _channel = MethodChannel('$LIBRARY_ID/qrview_$id') {
+      : _channel = MethodChannel('$libraryId/qrview_$id') {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       final RenderBox renderBox = qrKey.currentContext.findRenderObject();
-      _channel.invokeMethod("setDimensions",
-          {"width": renderBox.size.width, "height": renderBox.size.height});
+      _channel.invokeMethod('setDimensions',
+          {'width': renderBox.size.width, 'height': renderBox.size.height});
     }
     _channel.setMethodCallHandler(
-      (MethodCall call) async {
+      (call) async {
         switch (call.method) {
           case scanMethodCall:
             {
@@ -141,20 +137,27 @@ class QRViewController {
     );
   }
 
+  static const scanMethodCall = 'onRecognizeQR';
+  final MethodChannel _channel;
+  final StreamController<String> _scanUpdateController =
+      StreamController<String>();
+
+  Stream<String> get scannedDataStream => _scanUpdateController.stream;
+
   void flipCamera() {
-    _channel.invokeMethod("flipCamera");
+    _channel.invokeMethod('flipCamera');
   }
 
   void toggleFlash() {
-    _channel.invokeMethod("toggleFlash");
+    _channel.invokeMethod('toggleFlash');
   }
 
   void pauseCamera() {
-    _channel.invokeMethod("pauseCamera");
+    _channel.invokeMethod('pauseCamera');
   }
 
   void resumeCamera() {
-    _channel.invokeMethod("resumeCamera");
+    _channel.invokeMethod('resumeCamera');
   }
 
   void dispose() {
@@ -162,6 +165,6 @@ class QRViewController {
   }
 
   void openPermissionSettings() {
-    _channel.invokeMethod("openPermissionSettings");
+    _channel.invokeMethod('openPermissionSettings');
   }
 }

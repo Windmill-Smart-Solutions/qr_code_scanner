@@ -1,5 +1,5 @@
 # QR Code Scanner
-[![Build Status](https://dev.azure.com/juliuscanute/spring/_apis/build/status/juliuscanute.qr_code_scanner?branchName=master)](https://dev.azure.com/juliuscanute/spring/_build/latest?definitionId=7&branchName=master)
+[![GH Actions](https://github.com/juliuscanute/qr_code_scanner/workflows/dart/badge.svg)](https://github.com/juliuscanute/qr_code_scanner/actions)
 
 A QR code scanner that works on both iOS and Android by natively embedding the platform view within Flutter. The integration with Flutter is seamless, much better than jumping into a native Activity or a ViewController to perform the scan.
 
@@ -113,6 +113,8 @@ In order to use this plugin, add the following to your Info.plist file:
 ```
 <key>io.flutter.embedded_views_preview</key>
 <true/>
+<key>NSCameraUsageDescription</key>
+<string>This app needs camera access to scan QR codes</string>
 ```
 
 ## Flip Camera (Back/Front)
@@ -154,8 +156,10 @@ permissionController.stream.listen((isPermissionGrantedEvent) {
     });
 ```
 
+# SDK
+Requires at least SDK 24 (Android 7.0).
 
-# TODO'S:
+# TODOs
 * iOS Native embedding is written to match what is supported in the framework as of the date of publication of this package. It needs to be improved as the framework support improves.
 * In future, options will be provided for default states.
 * Finally, I welcome PR's to make it better :), thanks
