@@ -2,14 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:qr_code_scanner/qr_scanner_overlay_shape.dart';
 
 void main() => runApp(MaterialApp(home: QRViewExample()));
 
-const flash_on = "FLASH ON";
-const flash_off = "FLASH OFF";
-const front_camera = "FRONT CAMERA";
-const back_camera = "BACK CAMERA";
+const flashOn = "FLASH ON";
+const flashOff = "FLASH OFF";
+const frontCamera = "FRONT CAMERA";
+const backCamera = "BACK CAMERA";
 
 class QRViewExample extends StatefulWidget {
   const QRViewExample({
@@ -22,8 +21,8 @@ class QRViewExample extends StatefulWidget {
 
 class _QRViewExampleState extends State<QRViewExample> {
   var qrText = "";
-  var flashState = flash_on;
-  var cameraState = front_camera;
+  var flashState = flashOn;
+  var cameraState = frontCamera;
   var isPermissionGranted = true;
   QRViewController controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
@@ -45,10 +44,11 @@ class _QRViewExampleState extends State<QRViewExample> {
       body: Column(
         children: <Widget>[
           Expanded(
-            child: isPermissionGranted ? qrViewWidget : permissionDialogWidget,
             flex: 4,
+            child: isPermissionGranted ? qrViewWidget : permissionDialogWidget,
           ),
           Expanded(
+            flex: 1,
             child: FittedBox(
               fit: BoxFit.contain,
               child: Column(
@@ -60,18 +60,18 @@ class _QRViewExampleState extends State<QRViewExample> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       Container(
-                        margin: EdgeInsets.all(8.0),
+                        margin: EdgeInsets.all(8),
                         child: RaisedButton(
                           onPressed: () {
                             if (controller != null) {
                               controller.toggleFlash();
                               if (_isFlashOn(flashState)) {
                                 setState(() {
-                                  flashState = flash_off;
+                                  flashState = flashOff;
                                 });
                               } else {
                                 setState(() {
-                                  flashState = flash_on;
+                                  flashState = flashOn;
                                 });
                               }
                             }
@@ -81,18 +81,18 @@ class _QRViewExampleState extends State<QRViewExample> {
                         ),
                       ),
                       Container(
-                        margin: EdgeInsets.all(8.0),
+                        margin: EdgeInsets.all(8),
                         child: RaisedButton(
                           onPressed: () {
                             if (controller != null) {
                               controller.flipCamera();
                               if (_isBackCamera(cameraState)) {
                                 setState(() {
-                                  cameraState = front_camera;
+                                  cameraState = frontCamera;
                                 });
                               } else {
                                 setState(() {
-                                  cameraState = back_camera;
+                                  cameraState = backCamera;
                                 });
                               }
                             }
@@ -108,7 +108,7 @@ class _QRViewExampleState extends State<QRViewExample> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       Container(
-                        margin: EdgeInsets.all(8.0),
+                        margin: EdgeInsets.all(8),
                         child: RaisedButton(
                           onPressed: () {
                             controller?.pauseCamera();
@@ -117,7 +117,7 @@ class _QRViewExampleState extends State<QRViewExample> {
                         ),
                       ),
                       Container(
-                        margin: EdgeInsets.all(8.0),
+                        margin: EdgeInsets.all(8),
                         child: RaisedButton(
                           onPressed: () {
                             controller?.resumeCamera();
@@ -130,7 +130,6 @@ class _QRViewExampleState extends State<QRViewExample> {
                 ],
               ),
             ),
-            flex: 1,
           )
         ],
       ),
@@ -138,11 +137,11 @@ class _QRViewExampleState extends State<QRViewExample> {
   }
 
   _isFlashOn(String current) {
-    return flash_on == current;
+    return flashOn == current;
   }
 
   _isBackCamera(String current) {
-    return back_camera == current;
+    return backCamera == current;
   }
 
   void _onQRViewCreated(QRViewController controller) {
@@ -176,13 +175,13 @@ class _QRViewExampleState extends State<QRViewExample> {
 
   Widget get permissionDialogWidget => Center(
           child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
               "Camera Permission is nod granted",
-              style: TextStyle(color: Colors.black, fontSize: 24.0),
+              style: TextStyle(color: Colors.black, fontSize: 24),
             ),
             FlatButton(
               color: Colors.blue,

@@ -3,14 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class QrScannerOverlayShape extends ShapeBorder {
-  final Color borderColor;
-  final double borderWidth;
-  final Color overlayColor;
-  final double borderRadius;
-  final double borderLength;
-  final double cutOutSize;
-  final double cutOutBottomOffset;
-
   QrScannerOverlayShape(
       {this.borderColor = Colors.red,
       this.borderWidth = 3.0,
@@ -20,12 +12,18 @@ class QrScannerOverlayShape extends ShapeBorder {
       this.cutOutSize = 250,
       this.cutOutBottomOffset = 0})
       : assert(
-            cutOutSize != null
-                ? cutOutSize != null
-                    ? borderLength <= cutOutSize / 2 + borderWidth * 2
-                    : true
-                : true,
+            cutOutSize != null &&
+                cutOutSize != null &&
+                borderLength <= cutOutSize / 2 + borderWidth * 2,
             "Border can't be larger than ${cutOutSize / 2 + borderWidth * 2}");
+
+  final Color borderColor;
+  final double borderWidth;
+  final Color overlayColor;
+  final double borderRadius;
+  final double borderLength;
+  final double cutOutSize;
+  final double cutOutBottomOffset;
 
   @override
   EdgeInsetsGeometry get dimensions => const EdgeInsets.all(10);

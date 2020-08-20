@@ -29,14 +29,7 @@ class _QRViewState extends State<QRView> {
     return Stack(
       children: [
         _getPlatformQrView(),
-        if (widget.overlay != null)
-          Container(
-            decoration: ShapeDecoration(
-              shape: widget.overlay,
-            ),
-          )
-        else
-          Container(),
+        _getOverlay(),
       ],
     );
   }
@@ -70,6 +63,16 @@ class _QRViewState extends State<QRView> {
       return;
     }
     widget.onQRViewCreated(QRViewController._(id, widget.key));
+  }
+
+  Widget _getOverlay() {
+    if (widget.overlay != null) {
+      return Container(
+        decoration: ShapeDecoration(shape: widget.overlay),
+      );
+    } else {
+      return Container();
+    }
   }
 }
 
