@@ -3,20 +3,25 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+export 'package:qr_code_scanner/src/qr_scanner_overlay_shape.dart';
 
-typedef QRViewCreatedCallback = void Function(QRViewController);
+typedef QRViewCreatedCallback = void Function(QRViewController controller);
+
+const libraryId = 'net.touchcapture.qr.flutterqr';
 
 class QRView extends StatefulWidget {
   const QRView({
     @required Key key,
     @required this.onQRViewCreated,
+    @required this.permissionStreamSink,
     this.overlay,
   })  : assert(key != null),
         assert(onQRViewCreated != null),
+        assert(permissionStreamSink != null),
         super(key: key);
 
   final QRViewCreatedCallback onQRViewCreated;
-
+  final StreamSink<bool> permissionStreamSink;
   final ShapeBorder overlay;
 
   @override
@@ -24,38 +29,47 @@ class QRView extends StatefulWidget {
 }
 
 class _QRViewState extends State<QRView> {
+  MethodChannel permissionChannel;
+
+  static const cameraPermission = 'cameraPermission';
+  static const permissionGranted = 'granted';
+
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        _getPlatformQrView(),
-        _getOverlay(),
-      ],
-    );
+    return Stack(children: [
+      _getPlatformQrView(),
+      _getOverlay(),
+    ]);
   }
 
+  Widget _platformQrView;
+
   Widget _getPlatformQrView() {
-    Widget _platformQrView;
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        _platformQrView = AndroidView(
-          viewType: 'net.touchcapture.qr.flutterqr/qrview',
-          onPlatformViewCreated: _onPlatformViewCreated,
-        );
+        if (_platformQrView == null) {
+          return _platformQrView = AndroidView(
+              viewType: '$libraryId/qrview',
+              onPlatformViewCreated: _onPlatformViewCreated);
+        } else {
+          return _platformQrView;
+        }
         break;
       case TargetPlatform.iOS:
-        _platformQrView = UiKitView(
-          viewType: 'net.touchcapture.qr.flutterqr/qrview',
-          onPlatformViewCreated: _onPlatformViewCreated,
-          creationParams: _CreationParams.fromWidget(0, 0).toMap(),
-          creationParamsCodec: StandardMessageCodec(),
-        );
+        if (_platformQrView == null) {
+          return _platformQrView = UiKitView(
+              viewType: '$libraryId/qrview',
+              onPlatformViewCreated: _onPlatformViewCreated,
+              creationParams: _CreationParams.fromWidget(0, 0).toMap(),
+              creationParamsCodec: StandardMessageCodec());
+        } else {
+          return _platformQrView;
+        }
         break;
       default:
         throw UnsupportedError(
             "Trying to use the default webview implementation for $defaultTargetPlatform but there isn't a default one");
     }
-    return _platformQrView;
   }
 
   void _onPlatformViewCreated(int id) {
@@ -63,16 +77,21 @@ class _QRViewState extends State<QRView> {
       return;
     }
     widget.onQRViewCreated(QRViewController._(id, widget.key));
+    permissionChannel = MethodChannel('$libraryId/permission')
+      ..setMethodCallHandler((call) async {
+        if (call.method == cameraPermission) {
+          if (call.arguments != null) {
+            final isPermissionGranted = call.arguments == permissionGranted;
+            widget.permissionStreamSink.add(isPermissionGranted);
+          }
+        }
+      });
   }
 
   Widget _getOverlay() {
-    if (widget.overlay != null) {
-      return Container(
-        decoration: ShapeDecoration(shape: widget.overlay),
-      );
-    } else {
-      return Container();
-    }
+    return widget.overlay != null
+        ? Container(decoration: ShapeDecoration(shape: widget.overlay))
+        : Container();
   }
 }
 
@@ -90,16 +109,13 @@ class _CreationParams {
   final double height;
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'width': width,
-      'height': height,
-    };
+    return <String, dynamic>{'width': width, 'height': height};
   }
 }
 
 class QRViewController {
   QRViewController._(int id, GlobalKey qrKey)
-      : _channel = MethodChannel('net.touchcapture.qr.flutterqr/qrview_$id') {
+      : _channel = MethodChannel('$libraryId/qrview_$id') {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       final RenderBox renderBox = qrKey.currentContext.findRenderObject();
       _channel.invokeMethod('setDimensions',
@@ -109,8 +125,11 @@ class QRViewController {
       (call) async {
         switch (call.method) {
           case scanMethodCall:
-            if (call.arguments != null) {
-              _scanUpdateController.sink.add(call.arguments.toString());
+            {
+              if (call.arguments != null) {
+                _scanUpdateController.sink.add(call.arguments.toString());
+              }
+              break;
             }
         }
       },
@@ -118,9 +137,7 @@ class QRViewController {
   }
 
   static const scanMethodCall = 'onRecognizeQR';
-
   final MethodChannel _channel;
-
   final StreamController<String> _scanUpdateController =
       StreamController<String>();
 
@@ -144,5 +161,9 @@ class QRViewController {
 
   void dispose() {
     _scanUpdateController.close();
+  }
+
+  void openPermissionSettings() {
+    _channel.invokeMethod('openPermissionSettings');
   }
 }
