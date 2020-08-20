@@ -27,7 +27,7 @@ public class QRView: NSObject, FlutterPlatformView {
                     if let codes = codes {
                         for code in codes {
                             guard let stringValue = code.stringValue else { continue }
-                            self.channel.invokeMethod("onRecognizeQR", arguments: stringValue)
+                            self?.channel.invokeMethod("onRecognizeQR", arguments: stringValue)
                         }
                     }
                 })
