@@ -143,21 +143,13 @@ class QRViewController {
 
   Stream<String> get scannedDataStream => _scanUpdateController.stream;
 
-  void flipCamera() {
-    _channel.invokeMethod('flipCamera');
-  }
+  Future<void> flipCamera() => _channel.invokeMethod('flipCamera');
 
-  void toggleFlash() {
-    _channel.invokeMethod('toggleFlash');
-  }
+  Future<void> toggleFlash() => _channel.invokeMethod('toggleFlash');
 
-  void pauseCamera() {
-    _channel.invokeMethod('pauseCamera');
-  }
+  Future<void> pauseCamera() => _channel.invokeMethod('pauseCamera');
 
-  void resumeCamera() {
-    _channel.invokeMethod('resumeCamera');
-  }
+  Future<void> resumeCamera() => _channel.invokeMethod('resumeCamera');
 
   void dispose() {
     _scanUpdateController.close();
