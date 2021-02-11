@@ -35,7 +35,7 @@ public class QRView: NSObject, FlutterPlatformView {
                 NSLog("Unable to start scanning")
             }
         } else {
-            UIAlertView(title: "Scanning Unavailable", message: "This app does not have permission to access the camera", delegate: nil, cancelButtonTitle: nil, otherButtonTitles: "Ok").show()
+            UIAlertView(title: "Scanning Unavailable", message: "This app does not have permission to access the camera", delegate: self, cancelButtonTitle: "Ok", otherButtonTitles: "Settings").show()
         }
     }
     
@@ -44,7 +44,7 @@ public class QRView: NSObject, FlutterPlatformView {
             [weak self] (call: FlutterMethodCall, result: FlutterResult) -> Void in
             switch(call.method){
                 case "setDimensions":
-                    var arguments = call.arguments as! Dictionary<String, Double>
+                    let arguments = call.arguments as! Dictionary<String, Double>
                     self?.setDimensions(width: arguments["width"] ?? 0,height: arguments["height"] ?? 0)
                 case "flipCamera":
                     self?.flipCamera()
@@ -68,7 +68,7 @@ public class QRView: NSObject, FlutterPlatformView {
        MTBBarcodeScanner.requestCameraPermission(success: isCameraAvailable)
     }
     
-    func flipCamera(){
+    func flipCamera() {
         if let sc: MTBBarcodeScanner = scanner {
             if sc.hasOppositeCamera() {
                 sc.flipCamera()
@@ -76,7 +76,7 @@ public class QRView: NSObject, FlutterPlatformView {
         }
     }
     
-    func toggleFlash(){
+    func toggleFlash() {
         if let sc: MTBBarcodeScanner = scanner {
             if sc.hasTorch() {
                 sc.toggleTorch()
@@ -97,6 +97,16 @@ public class QRView: NSObject, FlutterPlatformView {
             if !sc.isScanning() {
                 sc.unfreezeCapture()
             }
+        }
+    }
+}
+
+extension QRView: UIAlertViewDelegate {
+    private func alertView(_ alertView: UIAlertView, clickedButtonAt buttonIndex: Int) {
+        if buttonIndex == 0 {
+            print("Settings")
+        } else {
+            print("Ok")
         }
     }
 }
