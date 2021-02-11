@@ -99,14 +99,21 @@ public class QRView: NSObject, FlutterPlatformView {
             }
         }
     }
+    
+    func openSettings() {
+        guard let settingsUrl = URL(string: UIApplicationOpenSettingsURLString) else { return }
+        if UIApplication.shared.canOpenURL(settingsUrl) {
+            if #available(iOS 10.0, *) {
+                UIApplication.shared.open(settingsUrl, options: [:], completionHandler: nil)
+            } else {
+                UIApplication.shared.openURL(settingsUrl)
+            }
+        }
+    }
 }
 
 extension QRView: UIAlertViewDelegate {
-    private func alertView(_ alertView: UIAlertView, clickedButtonAt buttonIndex: Int) {
-        if buttonIndex == 0 {
-            print("Settings")
-        } else {
-            print("Ok")
-        }
+    public func alertView(_ alertView: UIAlertView, clickedButtonAt buttonIndex: Int) {
+        if buttonIndex == 1 { openSettings() }
     }
 }
