@@ -32,6 +32,7 @@ class QRView(private val registrar: PluginRegistry.Registrar, id: Int) :
         const val LIBRARY_ID = "net.touchcapture.qr.flutterqr"
         private const val cameraPermission = "cameraPermission"
         private const val openPermissionSettings = "openPermissionSettings"
+        private const val setOvershadowed = "setOvershadowed"
         private const val permissionGranted = "granted"
         private const val permissionDenied = "denied"
     }
@@ -44,6 +45,7 @@ class QRView(private val registrar: PluginRegistry.Registrar, id: Int) :
     val channel: MethodChannel
     private val permissionChannel: MethodChannel
     private var isPermissionEnabled = true
+    private var isOvershadowed = false
 
     init {
         registrar.addRequestPermissionsResultListener(CameraRequestPermissionsListener())
@@ -60,7 +62,7 @@ class QRView(private val registrar: PluginRegistry.Registrar, id: Int) :
 
             override fun onActivityResumed(p0: Activity?) {
                 if (p0 == registrar.activity()) {
-                    if (hasCameraPermission()) {
+                    if (hasCameraPermission()  && isOvershadowed.not()) {
                         barcodeView?.resume()
                         postPermissionEnabled()
                     }
@@ -93,7 +95,7 @@ class QRView(private val registrar: PluginRegistry.Registrar, id: Int) :
 
     fun flipCamera() {
         barcodeView?.pause()
-        var settings = barcodeView?.cameraSettings
+        val settings = barcodeView?.cameraSettings
 
         if (settings?.requestedCameraId == CameraInfo.CAMERA_FACING_FRONT)
             settings?.requestedCameraId = CameraInfo.CAMERA_FACING_BACK
@@ -113,9 +115,7 @@ class QRView(private val registrar: PluginRegistry.Registrar, id: Int) :
     }
 
     private fun pauseCamera() {
-        if (barcodeView!!.isPreviewActive) {
-            barcodeView?.pause()
-        }
+        barcodeView?.pause()
     }
 
     private fun resumeCamera() {
@@ -131,7 +131,7 @@ class QRView(private val registrar: PluginRegistry.Registrar, id: Int) :
 
     override fun getView(): View {
         return initBarCodeView()?.apply {
-            if (hasCameraPermission()) {
+            if (hasCameraPermission() && isOvershadowed.not()) {
                 resume()
             }
         }!!
@@ -188,7 +188,7 @@ class QRView(private val registrar: PluginRegistry.Registrar, id: Int) :
 
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        when (call?.method) {
+        when (call.method) {
             "checkAndRequestPermission" -> {
                 checkAndRequestPermission(result)
             }
@@ -204,6 +204,8 @@ class QRView(private val registrar: PluginRegistry.Registrar, id: Int) :
             "resumeCamera" -> {
                 resumeCamera()
             }
+            setOvershadowed -> isOvershadowed = call.arguments as? Boolean ?: false
+
             openPermissionSettings -> openSettings()
         }
     }
@@ -216,7 +218,7 @@ class QRView(private val registrar: PluginRegistry.Registrar, id: Int) :
 
     private fun checkAndRequestPermission(result: MethodChannel.Result?) {
         if (cameraPermissionContinuation != null) {
-            result?.error("cameraPermission", "Camera permission request ongoing", null);
+            result?.error("cameraPermission", "Camera permission request ongoing", null)
         }
 
         cameraPermissionContinuation = Runnable {

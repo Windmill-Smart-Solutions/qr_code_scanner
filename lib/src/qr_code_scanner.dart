@@ -158,4 +158,8 @@ class QRViewController {
   void openPermissionSettings() {
     _channel.invokeMethod('openPermissionSettings');
   }
+
+  void setOvershadowed(bool isOvershadowed) {
+    _channel.invokeMethod('setOvershadowed', isOvershadowed);
+  }
 }
