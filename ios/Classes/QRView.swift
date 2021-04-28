@@ -35,7 +35,21 @@ public class QRView: NSObject, FlutterPlatformView {
                 NSLog("Unable to start scanning")
             }
         } else {
-            UIAlertView(title: "Scanning Unavailable", message: "This app does not have permission to access the camera", delegate: self, cancelButtonTitle: "Ok", otherButtonTitles: "Settings").show()
+            if #available(iOS 13.0, *) {
+                let alert = UIAlertController(title: "Scanning Unavailable",
+                                              message: "This app does not have permission to access the camera",
+                                              preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                alert.addAction(UIAlertAction(title: "Settings", style: .default, handler: { [weak self] _ in
+                    self?.openSettings()
+                }))
+                UIApplication.shared.keyWindow?.rootViewController.present(alert, animated: true, completion: nil)
+            } else {
+                UIAlertView(title: "Scanning Unavailable",
+                            message: "This app does not have permission to access the camera",
+                            delegate: self,
+                            cancelButtonTitle: "Ok", otherButtonTitles: "Settings").show()
+            }
         }
     }
     
