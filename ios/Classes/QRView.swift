@@ -40,8 +40,8 @@ public class QRView: NSObject, FlutterPlatformView {
                             message: "This app does not have permission to access the camera",
                             delegate: self,
                             cancelButtonTitle: "Ok", otherButtonTitles: "Settings").show()
+                return
             }
-
         }
     }
     
